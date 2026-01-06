@@ -1,87 +1,74 @@
-name: Auto Shorts Upload (XTTS)
+name: Shorts Pipeline (Clean Base)
 
 on:
   workflow_dispatch:
   schedule:
-    # Once per day (safe for XTTS on CI)
-    - cron: "0 15 * * *"
+    - cron: "0 15 * * *"   # once per day
 
 concurrency:
-  group: shorts-cash-machine
+  group: shorts-pipeline
   cancel-in-progress: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-
-    # IMPORTANT: required for pyworld legacy build
-    env:
-      PIP_NO_BUILD_ISOLATION: "1"
+    timeout-minutes: 60
 
     permissions:
       contents: write
 
     steps:
-      # ---------------------------------
-      # CHECKOUT
-      # ---------------------------------
+      # ----------------------------------------------------
+      # CHECKOUT REPOSITORY
+      # ----------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # ---------------------------------
-      # PYTHON SETUP
-      # ---------------------------------
+      # ----------------------------------------------------
+      # FREE DISK SPACE (IMPORTANT)
+      # ----------------------------------------------------
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/local/share/boost || true
+          sudo rm -rf /usr/share/swift || true
+
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+          echo "Disk space after cleanup:"
+          df -h
+
+      # ----------------------------------------------------
+      # SET UP PYTHON
+      # ----------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # ---------------------------------
-      # SYSTEM DEPENDENCIES (CRITICAL)
-      # ---------------------------------
-      - name: Install system dependencies for XTTS / pyworld
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            cmake \
-            python3-dev \
-            libatlas-base-dev \
-            libffi-dev \
-            libssl-dev \
-            libsndfile1 \
-            ffmpeg
-
-      # ---------------------------------
-      # PIP UPGRADE
-      # ---------------------------------
+      # ----------------------------------------------------
+      # UPGRADE PIP
+      # ----------------------------------------------------
       - name: Upgrade pip
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip
 
-      # ---------------------------------
-      # PYTHON DEPENDENCIES
-      # ---------------------------------
+      # ----------------------------------------------------
+      # INSTALL PYTHON DEPENDENCIES
+      # ----------------------------------------------------
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
 
-      # ---------------------------------
-      # NLTK DATA (REQUIRED)
-      # ---------------------------------
-      - name: Download NLTK data
-        run: |
-          python - <<EOF
-          import nltk
-          nltk.download("vader_lexicon")
-          EOF
-
-      # ---------------------------------
-      # RUN SHORTS PIPELINE
-      # ---------------------------------
+      # ----------------------------------------------------
+      # RUN PIPELINE
+      # ----------------------------------------------------
       - name: Run Shorts Pipeline
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
