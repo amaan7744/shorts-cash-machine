@@ -1,29 +1,67 @@
+import sys
+import os
+
+# Ensure repo root is on PYTHONPATH
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from pipeline import (
-    _01_search_youtube as search,
-    _02_select_video as select,
-    _04_extract_clip as extract,
-    _05_generate_script as scriptgen,
-    _06_generate_voice as voicegen,
-    _07_edit_short as editor,
-    _09_upload_youtube as uploader,
+    search_youtube,
+    select_video,
+    extract_best_segment,
+    download_video,
+    extract_clip,
+    generate_script,
+    generate_voice,
+    edit_short,
+    upload_youtube,
 )
 
-videos = search.search_videos()
-video = select.select_video(videos)
+def main():
+    # 1. Search viral videos
+    video_ids = search_youtube.search_videos()
+    if not video_ids:
+        raise RuntimeError("No videos found")
 
-raw = f"https://www.youtube.com/watch?v={video['id']}"
-clip = extract.extract_clip(raw, video["id"])
+    # 2. Select one unused viral video
+    video = select_video.select_video(video_ids)
+    if not video:
+        raise RuntimeError("No suitable video selected")
 
-script = scriptgen.generate_script()
-voice = voicegen.generate_voice(script)
+    video_id = video["id"]
 
-final = editor.merge(clip, voice)
+    # 3. Find best emotional segment (TRANSCRIPT-BASED)
+    start, end = extract_best_segment.extract_best_segment(video_id)
 
-uploader.upload(
-    final,
-    title="Nobody expected this to happen",
-    description=(
-        f"Original video by: {video['snippet']['channelTitle']}\n"
-        f"Source: https://youtube.com/watch?v={video['id']}"
+    # 4. Download full video (REQUIRED)
+    raw_video_path = download_video.download_video(video_id)
+
+    # 5. Cut the clip
+    clip_path = extract_clip.extract_clip(
+        raw_video_path,
+        start=start,
+        end=end,
     )
-)
+
+    # 6. Generate narration script
+    script_text = generate_script.generate_script(video_id)
+    
+    # 7. Generate voiceover
+    voice_path = generate_voice.generate_voice(script_text)
+
+    # 8. Merge clip + voice
+    final_video = edit_short.merge(clip_path, voice_path)
+
+    # 9. Upload to YouTube Shorts
+    upload_youtube.upload(
+        video_path=final_video,
+        title="Nobody expected this to happen",
+        description=(
+            f"Original video by: {video['snippet']['channelTitle']}\n"
+            f"Source: https://youtube.com/watch?v={video_id}"
+        ),
+    )
+
+    print("✅ SHORT UPLOADED SUCCESSFULLY")
+
+if __name__ == "__main__":
+    main()
