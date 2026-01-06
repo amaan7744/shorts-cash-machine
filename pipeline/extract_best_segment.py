@@ -1,11 +1,13 @@
-from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api import get_transcript
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-nltk.download("vader_lexicon")
+# Ensure lexicon is available
+nltk.download("vader_lexicon", quiet=True)
+
 
 def extract_best_segment(video_id, min_len=20, max_len=40):
-    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+    transcript = get_transcript(video_id)
 
     analyzer = SentimentIntensityAnalyzer()
 
@@ -15,7 +17,7 @@ def extract_best_segment(video_id, min_len=20, max_len=40):
         scored.append({
             "start": entry["start"],
             "text": entry["text"],
-            "score": abs(score)
+            "score": abs(score),
         })
 
     # Pick highest emotional moment
@@ -25,3 +27,4 @@ def extract_best_segment(video_id, min_len=20, max_len=40):
     duration = min(max_len, max(min_len, 30))
 
     return start, start + duration
+
