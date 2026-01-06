@@ -30,7 +30,7 @@ def main():
     video_id = video["id"]
 
     # 3. Find best emotional segment (TRANSCRIPT-BASED)
-    start, end = extract_best_segment.extract_best_segment(video_id)
+   start, end = extract_best_segment.extract_best_segment(video_id)
 
     # 4. Download full video (REQUIRED)
     raw_video_path = download_video.download_video(video_id)
