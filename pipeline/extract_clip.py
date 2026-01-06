@@ -1,10 +1,7 @@
 from moviepy.editor import VideoFileClip
-from pipeline.03b_extract_best_segment import extract_best_segment
 
-def extract_clip(path, video_id):
-    clip = VideoFileClip(path)
-
-    start, end = extract_best_segment(video_id)
+def extract_clip(video_path, start, end):
+    clip = VideoFileClip(video_path)
     short = clip.subclip(start, end)
 
     output = "data/clip.mp4"
@@ -12,7 +9,9 @@ def extract_clip(path, video_id):
         output,
         codec="libx264",
         audio_codec="aac",
-        fps=30
+        fps=30,
+        threads=4,
+        logger=None,
     )
 
     return output
