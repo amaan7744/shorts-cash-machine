@@ -1,9 +1,9 @@
-name: Auto Shorts Upload
+name: Auto Shorts Upload (XTTS)
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs once per day (adjust later if needed)
+    # Once per day (safe for XTTS on CI)
     - cron: "0 15 * * *"
 
 concurrency:
@@ -13,51 +13,65 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
+
+    # IMPORTANT: required for pyworld legacy build
+    env:
+      PIP_NO_BUILD_ISOLATION: "1"
 
     permissions:
       contents: write
 
     steps:
-      # -------------------------------
-      # CHECKOUT REPO
-      # -------------------------------
+      # ---------------------------------
+      # CHECKOUT
+      # ---------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # -------------------------------
-      # SET UP PYTHON
-      # -------------------------------
+      # ---------------------------------
+      # PYTHON SETUP
+      # ---------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # -------------------------------
-      # SYSTEM DEPENDENCIES (XTTS FIX)
-      # -------------------------------
-      - name: Install system dependencies
+      # ---------------------------------
+      # SYSTEM DEPENDENCIES (CRITICAL)
+      # ---------------------------------
+      - name: Install system dependencies for XTTS / pyworld
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             cmake \
+            python3-dev \
+            libatlas-base-dev \
+            libffi-dev \
+            libssl-dev \
             libsndfile1 \
             ffmpeg
 
-      # -------------------------------
-      # INSTALL PYTHON DEPENDENCIES
-      # -------------------------------
+      # ---------------------------------
+      # PIP UPGRADE
+      # ---------------------------------
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+      # ---------------------------------
+      # PYTHON DEPENDENCIES
+      # ---------------------------------
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # -------------------------------
-      # NLTK DATA (SENTIMENT ANALYSIS)
-      # -------------------------------
+      # ---------------------------------
+      # NLTK DATA (REQUIRED)
+      # ---------------------------------
       - name: Download NLTK data
         run: |
           python - <<EOF
@@ -65,9 +79,9 @@ jobs:
           nltk.download("vader_lexicon")
           EOF
 
-      # -------------------------------
-      # RUN PIPELINE
-      # -------------------------------
+      # ---------------------------------
+      # RUN SHORTS PIPELINE
+      # ---------------------------------
       - name: Run Shorts Pipeline
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
