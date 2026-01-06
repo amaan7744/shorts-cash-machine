@@ -4,11 +4,7 @@ from googleapiclient.discovery import build
 
 def search_videos():
     config = yaml.safe_load(open("config.yaml"))
-    youtube = build(
-        "youtube",
-        "v3",
-        developerKey=os.getenv("YOUTUBE_API_KEY")
-    )
+    youtube = build("youtube", "v3", developerKey=os.getenv("YOUTUBE_API_KEY"))
 
     video_ids = set()
 
@@ -19,11 +15,10 @@ def search_videos():
             type="video",
             maxResults=15,
             videoDuration="short",
-            regionCode="US",              # 🔑 US BIAS
-            relevanceLanguage="en",        # 🔑 English
-            videoCategoryId="24"           # Entertainment
+            regionCode="US",
+            relevanceLanguage="en",
+            videoCategoryId="24"
         )
-
         response = request.execute()
 
         for item in response.get("items", []):
