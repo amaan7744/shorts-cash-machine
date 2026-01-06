@@ -2,7 +2,9 @@ import sys
 import os
 
 # Ensure repo root is on PYTHONPATH
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
 
 from pipeline import (
     search_youtube,
@@ -15,6 +17,7 @@ from pipeline import (
     edit_short,
     upload_youtube,
 )
+
 
 def main():
     # 1. Search viral videos
@@ -29,10 +32,10 @@ def main():
 
     video_id = video["id"]
 
-    # 3. Find best emotional segment (TRANSCRIPT-BASED)
-   start, end = extract_best_segment.extract_best_segment(video_id)
+    # 3. Find best emotional segment (transcript-based)
+    start, end = extract_best_segment.extract_best_segment(video_id)
 
-    # 4. Download full video (REQUIRED)
+    # 4. Download full video
     raw_video_path = download_video.download_video(video_id)
 
     # 5. Cut the clip
@@ -44,14 +47,14 @@ def main():
 
     # 6. Generate narration script
     script_text = generate_script.generate_script(video_id)
-    
+
     # 7. Generate voiceover
     voice_path = generate_voice.generate_voice(script_text)
 
     # 8. Merge clip + voice
     final_video = edit_short.merge(clip_path, voice_path)
 
-    # 9. Upload to YouTube Shorts
+    # 9. Upload to YouTube
     upload_youtube.upload(
         video_path=final_video,
         title="Nobody expected this to happen",
@@ -62,6 +65,7 @@ def main():
     )
 
     print("✅ SHORT UPLOADED SUCCESSFULLY")
+
 
 if __name__ == "__main__":
     main()
