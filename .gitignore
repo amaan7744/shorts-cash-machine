@@ -1,0 +1,12 @@
+# ===== Generated media =====
+data/*.mp4
+data/*.wav
+data/*.mp3
+
+# ===== OAuth / secrets =====
+client_secret.json
+oauth_full_token.json
+
+# ===== Python =====
+__pycache__/
+*.pyc
