@@ -5,6 +5,8 @@ google-api-python-client
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
+youtube-transcript-api==0.6.1
+
 
 # ===============================
 # OpenAI (GPT script generation)
