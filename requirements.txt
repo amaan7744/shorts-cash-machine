@@ -1,0 +1,38 @@
+# ===============================
+# Google / YouTube APIs
+# ===============================
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
+# ===============================
+# OpenAI (GPT script generation)
+# ===============================
+openai
+
+# ===============================
+# Video downloading & editing
+# ===============================
+yt-dlp
+moviepy
+pydub
+
+# ===============================
+# Audio / TTS (XTTS)
+# ===============================
+torch
+torchaudio
+TTS
+
+# ===============================
+# NLP / clip detection
+# ===============================
+nltk
+youtube-transcript-api
+
+# ===============================
+# Config & utilities
+# ===============================
+pyyaml
+python-dotenv
