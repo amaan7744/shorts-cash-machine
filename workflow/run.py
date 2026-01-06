@@ -26,7 +26,9 @@ for _ in range(count):
     script = scriptgen.generate_script()
     voice = voicegen.generate_voice(script)
 
-    final = editor.merge(clip, voice)
+    merged = editor.merge(clip, voice)
+    final = captions.add_captions(merged, script)
+
 
     uploader.upload(
         final,
