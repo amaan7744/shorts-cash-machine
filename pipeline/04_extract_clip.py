@@ -8,6 +8,11 @@ def extract_clip(path, video_id):
     short = clip.subclip(start, end)
 
     output = "data/clip.mp4"
-    short.write_videofile(output, codec="libx264", audio_codec="aac")
+    short.write_videofile(
+        output,
+        codec="libx264",
+        audio_codec="aac",
+        fps=30
+    )
 
     return output
