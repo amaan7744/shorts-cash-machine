@@ -24,6 +24,8 @@ pydub
 torch
 torchaudio
 TTS
+pyworld==0.3.2
+
 
 # ===============================
 # NLP / clip detection
