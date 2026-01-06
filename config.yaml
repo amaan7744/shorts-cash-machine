@@ -1,0 +1,16 @@
+youtube:
+  min_views: 2000000
+  max_duration_seconds: 120
+  keywords:
+    - prank
+    - unexpected
+    - caught on camera
+    - nobody expected
+    - this happened
+
+shorts:
+  clip_min_seconds: 20
+  clip_max_seconds: 40
+
+posting:
+  uploads_per_run: 1
