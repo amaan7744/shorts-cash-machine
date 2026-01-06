@@ -21,10 +21,13 @@ pydub
 # ===============================
 # Audio / TTS (XTTS)
 # ===============================
-torch
+TTS==0.22.0
+pydub>=0.25.1
 torchaudio
-TTS
-pyworld==0.3.2
+torchvision
+soundfile>=0.12.1
+TorchCodec
+
 
 
 # ===============================
