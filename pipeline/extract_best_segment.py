@@ -1,13 +1,14 @@
-from youtube_transcript_api import get_transcript
+from youtube_transcript_api import YouTubeTranscriptApi
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-# Ensure lexicon is available
+# Ensure lexicon is available (CI-safe)
 nltk.download("vader_lexicon", quiet=True)
 
 
 def extract_best_segment(video_id, min_len=20, max_len=40):
-    transcript = get_transcript(video_id)
+    # Class-based API (works across versions)
+    transcript = YouTubeTranscriptApi.get_transcript(video_id)
 
     analyzer = SentimentIntensityAnalyzer()
 
@@ -27,4 +28,3 @@ def extract_best_segment(video_id, min_len=20, max_len=40):
     duration = min(max_len, max(min_len, 30))
 
     return start, start + duration
-
