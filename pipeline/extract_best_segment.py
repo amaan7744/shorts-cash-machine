@@ -1,33 +1,43 @@
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from nltk.sentiment import SentimentIntensityAnalyzer
+import random
 import nltk
 
 nltk.download("vader_lexicon", quiet=True)
 
 
 def extract_best_segment(video_id, min_len=20, max_len=40):
+    """
+    Returns (start, end) ALWAYS.
+    Uses transcript if available, otherwise fallback to random clip.
+    """
+
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
-    except (TranscriptsDisabled, NoTranscriptFound):
-        # Signal caller to skip this video
-        return None
 
-    analyzer = SentimentIntensityAnalyzer()
+        analyzer = SentimentIntensityAnalyzer()
+        scored = []
 
-    scored = []
-    for entry in transcript:
-        score = analyzer.polarity_scores(entry["text"])["compound"]
-        scored.append({
-            "start": entry["start"],
-            "score": abs(score),
-        })
+        for entry in transcript:
+            score = analyzer.polarity_scores(entry["text"])["compound"]
+            scored.append({
+                "start": entry["start"],
+                "score": abs(score),
+            })
 
-    if not scored:
-        return None
+        if scored:
+            peak = max(scored, key=lambda x: x["score"])
+            start = max(0, peak["start"] - 5)
+            duration = min(max_len, max(min_len, 30))
+            return start, start + duration
 
-    peak = max(scored, key=lambda x: x["score"])
+    except (TranscriptsDisabled, NoTranscriptFound, Exception):
+        pass
 
-    start = max(0, peak["start"] - 5)
-    duration = min(max_len, max(min_len, 30))
+    # -----------------------------
+    # FALLBACK: random clip
+    # -----------------------------
+    start = random.randint(10, 60)
+    duration = random.randint(min_len, max_len)
 
     return start, start + duration
