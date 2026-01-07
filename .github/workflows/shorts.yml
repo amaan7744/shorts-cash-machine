@@ -69,14 +69,28 @@ jobs:
           python workflow/run.py
 
       # ------------------------------------
-      # UPLOAD ARTIFACT (CRITICAL)
+      # DEBUG: LIST FILES
       # ------------------------------------
-      - name: Upload generated video artifact
+      - name: List generated files
+        if: always()
+        run: |
+          echo "PWD:"
+          pwd
+          echo "----"
+          echo "Repo root:"
+          ls -la
+          echo "----"
+          echo "Data directory:"
+          ls -la data || true
+          echo "----"
+          find . -type f | sed 's|^\./||'
+
+      # ------------------------------------
+      # UPLOAD ARTIFACT (UPLOAD EVERYTHING)
+      # ------------------------------------
+      - name: Upload artifacts (debug)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: final-short-video
-          path: |
-            data/final.mp4
-            data/clip.mp4
-            data/raw.mp4
+          name: pipeline-output
+          path: data/
