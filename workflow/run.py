@@ -1,8 +1,8 @@
-import sys
 import os
+import sys
 
 # -------------------------------------------------
-# Ensure repo root is on PYTHONPATH
+# Ensure repo root on path
 # -------------------------------------------------
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 if ROOT_DIR not in sys.path:
@@ -20,85 +20,72 @@ from pipeline import (
     upload_youtube,
 )
 
-
 def main():
-    print("🚀 Starting Shorts pipeline")
+    print("🚀 PIPELINE STARTED")
+    print("📂 CWD:", os.getcwd())
+
+    # -------------------------------------------------
+    # FORCE data dir + sentinel
+    # -------------------------------------------------
     os.makedirs("data", exist_ok=True)
 
+    with open("data/_pipeline_started.txt", "w") as f:
+        f.write("pipeline reached main()\n")
+
+    # -------------------------------------------------
+    # SEARCH
+    # -------------------------------------------------
     video_ids = search_youtube.search_videos()
+    print("🔍 Search returned:", video_ids[:5])
+
     if not video_ids:
         print("❌ No videos found")
         return
 
-    for attempt in range(len(video_ids)):
-        print(f"\n🔁 Attempt {attempt + 1}")
+    # -------------------------------------------------
+    # TRY VIDEOS ONE BY ONE
+    # -------------------------------------------------
+    for idx, _ in enumerate(video_ids):
+        print(f"\n🔁 ATTEMPT {idx+1}")
 
         video = select_video.select_video(video_ids)
         if not video:
-            print("❌ No more suitable videos")
+            print("❌ select_video returned None")
             return
 
-        video_id = video["id"]
-        print(f"🎯 Trying video: {video_id}")
+        # -------------------------------------------------
+        # NORMALIZE VIDEO ID (CRITICAL)
+        # -------------------------------------------------
+        video_id = video.get("id")
 
-        # 1. Transcript-based segment
-        segment = extract_best_segment.extract_best_segment(video_id)
-        if segment is None:
-            print("⚠️ No transcript, skipping")
-            continue
+        if isinstance(video_id, dict):
+            video_id = video_id.get("videoId")
 
-        start, end = segment
+        print("🎯 VIDEO ID:", video_id, type(video_id))
 
-        # 2. Download
+        if not isinstance(video_id, str):
+            raise RuntimeError(f"INVALID video_id: {video_id}")
+
+        with open("data/_before_download.txt", "w") as f:
+            f.write(f"about to download {video_id}\n")
+
+        # -------------------------------------------------
+        # DOWNLOAD (STOP AFTER THIS)
+        # -------------------------------------------------
         try:
-            raw_video = download_video.download_video(video_id)
+            raw = download_video.download_video(video_id)
         except Exception as e:
-            print(f"⚠️ Download failed: {e}")
+            print("❌ DOWNLOAD FAILED:", e)
             continue
 
-        # 3. Clip
-        try:
-            clip = extract_clip.extract_clip(raw_video, start=start, end=end)
-        except Exception as e:
-            print(f"⚠️ Clip failed: {e}")
-            continue
+        with open("data/_after_download.txt", "w") as f:
+            f.write("download finished\n")
 
-        # 4. Script
-        try:
-            script = generate_script.generate_script(video_id)
-        except Exception as e:
-            print(f"⚠️ Script failed: {e}")
-            continue
-
-        # 5. Voice
-        try:
-            voice = generate_voice.generate_voice(script)
-        except Exception as e:
-            print(f"⚠️ Voice failed: {e}")
-            continue
-
-        # 6. Merge
-        try:
-            final_video = edit_short.merge(clip, voice)
-        except Exception as e:
-            print(f"⚠️ Merge failed: {e}")
-            continue
-
-        # 7. Upload
-        try:
-            upload_youtube.upload(
-                video_path=final_video,
-                title="Nobody expected this to happen",
-                description=(
-                    f"Original video by: {video['snippet']['channelTitle']}\n"
-                    f"https://youtube.com/watch?v={video_id}"
-                ),
-            )
-        except Exception as e:
-            print(f"⚠️ Upload failed: {e}")
-            continue
-
-        print("✅ SUCCESS — SHORT CREATED & UPLOADED")
+        print("✅ DOWNLOAD SUCCESS:", raw)
+        print("🛑 STOPPING PIPELINE HERE (DEBUG MODE)")
         return
 
-    print("❌ All attempts failed. No video produced.")
+    print("❌ ALL ATTEMPTS FAILED")
+
+if __name__ == "__main__":
+    main()
