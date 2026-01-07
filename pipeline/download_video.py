@@ -1,24 +1,25 @@
 import subprocess
 import os
 
-OUTPUT_PATH = "data/raw.mp4"
-
 def download_video(video_id: str) -> str:
-    """
-    Downloads the full YouTube video as MP4.
-    """
+    os.makedirs("data", exist_ok=True)
+    output = "data/raw.mp4"
+
     url = f"https://www.youtube.com/watch?v={video_id}"
 
-    os.makedirs("data", exist_ok=True)
+    subprocess.run(
+        [
+            "yt-dlp",
+            "-f",
+            "mp4",
+            "-o",
+            output,
+            url,
+        ],
+        check=True,
+    )
 
-    cmd = [
-        "yt-dlp",
-        "-f",
-        "mp4",
-        "-o",
-        OUTPUT_PATH,
-        url,
-    ]
+    if not os.path.exists(output):
+        raise RuntimeError("raw.mp4 not created")
 
-    subprocess.run(cmd, check=True)
-    return OUTPUT_PATH
+    return output
