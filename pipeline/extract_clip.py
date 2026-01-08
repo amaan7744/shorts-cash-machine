@@ -1,20 +1,15 @@
+import random, yaml
 from moviepy.editor import VideoFileClip
-import os
 
-def extract_clip(video_path, start, end):
-    os.makedirs("data", exist_ok=True)
-    output = "data/clip.mp4"
+def extract_clip(path):
+    cfg = yaml.safe_load(open("config.yaml"))
+    v = VideoFileClip(path)
 
-    clip = VideoFileClip(video_path).subclip(start, end)
-    clip.write_videofile(
-        output,
-        codec="libx264",
-        audio_codec="aac",
-        fps=30,
-        logger=None,
+    start = random.uniform(0, max(0, v.duration - cfg["shorts"]["clip_max_seconds"]))
+    dur = random.uniform(cfg["shorts"]["clip_min_seconds"], cfg["shorts"]["clip_max_seconds"])
+
+    out = "data/clip.mp4"
+    v.subclip(start, start + dur).write_videofile(
+        out, codec="libx264", audio_codec="aac", verbose=False, logger=None
     )
-
-    if not os.path.exists(output):
-        raise RuntimeError("clip.mp4 not created")
-
-    return output
+    return out
