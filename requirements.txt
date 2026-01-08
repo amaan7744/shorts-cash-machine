@@ -43,3 +43,7 @@ youtube-transcript-api
 # ===============================
 pyyaml
 python-dotenv
+requests
+
+
+
