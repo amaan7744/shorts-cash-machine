@@ -1,27 +1,43 @@
 import requests
 import yaml
+import random
 from .halal_filter import is_halal
 
+INSTANCES = [
+    "https://libredd.it",
+    "https://libreddit.de",
+    "https://lr.riverside.rocks",
+    "https://redlib.catsarch.com",
+]
+
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; shorts-bot/1.0)"
+    "User-Agent": "Mozilla/5.0"
 }
+
+def fetch_json(url):
+    r = requests.get(url, headers=HEADERS, timeout=15)
+    if r.status_code != 200:
+        raise RuntimeError(f"{r.status_code}")
+    return r.json()
 
 def search_reddit():
     cfg = yaml.safe_load(open("config.yaml"))
     results = []
 
     for sub in cfg["reddit"]["subreddits"]:
-        url = f"https://old.reddit.com/r/{sub}/top/.json?raw_json=1&t=week&limit=10"
+        random.shuffle(INSTANCES)
 
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=15)
-            if r.status_code != 200:
-                print(f"⚠️ Reddit blocked subreddit {sub}: {r.status_code}")
-                continue
+        data = None
+        for base in INSTANCES:
+            url = f"{base}/r/{sub}/top.json?limit=10&t=week"
+            try:
+                data = fetch_json(url)
+                break
+            except Exception as e:
+                print(f"⚠️ {base} failed for {sub}: {e}")
 
-            data = r.json()
-        except Exception as e:
-            print(f"⚠️ Reddit fetch failed for {sub}: {e}")
+        if not data:
+            print(f"❌ All instances failed for {sub}")
             continue
 
         for child in data["data"]["children"]:
