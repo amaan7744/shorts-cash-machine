@@ -1,12 +1,11 @@
-youtube:
-  min_views: 2000000
-  max_duration_seconds: 120
-  keywords:
-    - prank
-    - unexpected
-    - caught on camera
-    - nobody expected
-    - this happened
+reddit:
+  subreddits:
+    - Unexpected
+    - AbruptChaos
+    - PublicFreakout
+    - AnimalsBeingDerps
+  min_upvotes: 5000
+  max_duration_seconds: 90
 
 shorts:
   clip_min_seconds: 20
