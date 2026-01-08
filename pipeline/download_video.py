@@ -1,42 +1,15 @@
-import subprocess
-import os
+import requests, os
 
-def download_video(video_id: str) -> str:
+def download_video(url):
     os.makedirs("data", exist_ok=True)
+    out = "data/raw.mp4"
 
-    cookies = os.getenv("YTDLP_COOKIES")
-    if not cookies:
-        raise RuntimeError("YTDLP_COOKIES secret is missing")
+    r = requests.get(url, stream=True, timeout=20)
+    r.raise_for_status()
 
-    cookies_path = "cookies.txt"
-    with open(cookies_path, "w", encoding="utf-8") as f:
-        f.write(cookies)
+    with open(out, "wb") as f:
+        for chunk in r.iter_content(8192):
+            if chunk:
+                f.write(chunk)
 
-    output = "data/raw.mp4"
-    url = f"https://www.youtube.com/watch?v={video_id}"
-
-    result = subprocess.run(
-        [
-            "yt-dlp",
-            "--cookies", cookies_path,
-            "--no-playlist",
-            "-f", "bv*[ext=mp4]+ba[ext=m4a]/mp4",
-            "-o", output,
-            url,
-        ],
-        capture_output=True,
-        text=True,
-    )
-
-    print("yt-dlp STDOUT:\n", result.stdout)
-    print("yt-dlp STDERR:\n", result.stderr)
-
-    os.remove(cookies_path)
-
-    if result.returncode != 0:
-        raise RuntimeError("yt-dlp failed")
-
-    if not os.path.exists(output):
-        raise RuntimeError("raw.mp4 not created")
-
-    return output
+    return out
