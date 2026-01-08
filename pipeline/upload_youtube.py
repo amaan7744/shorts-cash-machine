@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
 
-def upload(video_path, title, description):
+def upload(path, title, description):
     creds = Credentials(
         None,
         refresh_token=os.getenv("YT_REFRESH_TOKEN"),
@@ -13,19 +13,13 @@ def upload(video_path, title, description):
         scopes=["https://www.googleapis.com/auth/youtube.upload"]
     )
 
-    youtube = build("youtube", "v3", credentials=creds)
+    yt = build("youtube","v3",credentials=creds)
 
-    request = youtube.videos().insert(
+    yt.videos().insert(
         part="snippet,status",
         body={
-            "snippet": {
-                "title": title[:95],
-                "description": description,
-                "categoryId": "24"
-            },
-            "status": {"privacyStatus": "public"}
+            "snippet":{"title":title[:95],"description":description,"categoryId":"24"},
+            "status":{"privacyStatus":"public"}
         },
-        media_body=MediaFileUpload(video_path)
-    )
-
-    request.execute()
+        media_body=MediaFileUpload(path)
+    ).execute()
