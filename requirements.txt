@@ -1,49 +1,29 @@
 # ===============================
-# Google / YouTube APIs
+# Core runtime
 # ===============================
-google-api-python-client
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-youtube-transcript-api==0.6.1
-
-
-# ===============================
-# OpenAI (GPT script generation)
-# ===============================
-openai
-
-# ===============================
-# Video downloading & editing
-# ===============================
-yt-dlp
-moviepy
-pydub
-
-# ===============================
-# Audio / TTS (XTTS)
-# ===============================
-TTS==0.22.0
-pydub>=0.25.1
-torchaudio
-torchvision
-soundfile>=0.12.1
-TorchCodec
-
-
-
-# ===============================
-# NLP / clip detection
-# ===============================
-nltk
-youtube-transcript-api
-
-# ===============================
-# Config & utilities
-# ===============================
-pyyaml
 python-dotenv
 requests
 
+# ===============================
+# Video download & processing
+# ===============================
+yt-dlp
+pydub
 
+# ===============================
+# Subtitles / transcription
+# ===============================
+openai-whisper
 
+# ===============================
+# TTS (XTTS v2 – CPU only)
+# ===============================
+TTS==0.22.0
+torch
+torchaudio
+soundfile>=0.12.1
+
+# ===============================
+# Utilities
+# ===============================
+numpy
