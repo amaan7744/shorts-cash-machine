@@ -1,37 +1,29 @@
 import subprocess
-import json
 from logger import logger
 
 
 def get_latest_video_url(channel_url: str) -> str | None:
+    """
+    Returns the URL of the latest video from a YouTube channel.
+    This method is CI-safe and avoids channel-ID confusion.
+    """
     try:
         cmd = [
             "yt-dlp",
-            "--flat-playlist",
-            "--dump-single-json",
+            "--playlist-items", "1",
+            "--print", "url",
             channel_url
         ]
 
-        output = subprocess.check_output(cmd, text=True)
-        data = json.loads(output)
+        output = subprocess.check_output(cmd, text=True).strip()
 
-        entries = data.get("entries", [])
-        if not entries:
+        if not output.startswith("http"):
+            logger.error(f"Invalid video URL returned: {output}")
             return None
 
-        latest = entries[0]
-
-        # THIS IS THE FIX
-        if "url" in latest:
-            return latest["url"]
-
-        # fallback
-        video_id = latest.get("id")
-        if video_id:
-            return f"https://www.youtube.com/watch?v={video_id}"
-
-        return None
+        logger.info(f"Latest video resolved: {output}")
+        return output
 
     except Exception as e:
-        logger.error(f"Channel fetch failed: {e}")
+        logger.error(f"Failed to resolve latest video: {e}")
         return None
